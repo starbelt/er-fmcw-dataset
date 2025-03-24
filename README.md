@@ -124,18 +124,22 @@ Python dependencies:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/fmcw-radar-dataset-generator.git
-   cd fmcw-radar-dataset-generator
+   git clone https://github.com/starbelt/er-fmcw-dataset.git
+   cd er-fmcw-dataset
    ```
 
-2. Install required packages:
+2. Install required packages as needed:
    ```bash
    pip install numpy pyqt5 pyqtgraph opencv-python pyadi-iio matplotlib scipy
    ```
+   or
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. Connect to the CN0566 Phaser platform:
-   - Connect the Raspberry Pi physically to the CN0566 board
-   - Connect to the network where the Phaser is accessible
+4. Connect to the CN0566 Phaser platform:
+   - Connect the Raspberry Pi physically to the CN0566 board (if using cutom setup)
+   - Connect to the network where the Phaser is accessible (local, or port forward if public facing; hardwire if necessary)
    - Ensure the Pluto firmware is updated to v0.39 or later
 
 ## Usage
@@ -173,6 +177,4 @@ Python dependencies:
 
 ## License
 
-This project is licensed under the BSD License. See the LICENSE file for details.
-
-Note: Some of the underlying hardware and software components use the Analog Devices license.
+Some of the underlying hardware and software components use the Analog Devices license. See `AnalogDevicesLicense.txt` for more info.
