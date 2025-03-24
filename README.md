@@ -186,6 +186,7 @@ The system produces two types of output files:
 The generated images visualize time-frequency data from radar returns, providing a distinctive "signature" for objects at different distances. Each image is a 56×56 pixel (configurable up to 256×256) spectrogram using the Viridis colormap:
 
 <img src="DataSet/0.37-0.52/Images/0318-135453_truedist0.432_calcdist0.470_bin0.37-0.52m_img2.png" alt="Example Radar Image" width="300"/>
+
 *Example of radar return from an object at 0.432m. The program calculates its distance to be 0.470m which is within the range resolution of 0.15m. This image is from the 0.37-0.52m data set*
 
 Each image filename contains important metadata:
