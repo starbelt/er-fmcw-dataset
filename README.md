@@ -92,8 +92,10 @@ DataSet/
 │   │   ├── [timestamp]_truedist[value]_calcdist[value]_bin[range]_img1.png
 │   │   ├── [timestamp]_truedist[value]_calcdist[value]_bin[range]_img2.png
 │   │   └── ...
-│   └── CSV/
-│       └── [timestamp]_[fft_size]x[num_samples].csv
+│   └── FilteredCSV/
+│   │   ├── [timestamp]_truedist[value]_calcdist[value]_bin[range]_img1.csv
+│   │   ├── [timestamp]_truedist[value]_calcdist[value]_bin[range]_img2.csv
+│   │   └── ...
 ├── [range_bin_2]/
 └── ...
 ```
