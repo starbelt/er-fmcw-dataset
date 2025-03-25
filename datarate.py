@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import sys
 import os
+from collections import defaultdict
 
 def calculate_avg_sample_rate(file_path):
     """Calculate the average sample rate from a CSV file with timestamps."""
@@ -50,25 +51,81 @@ def calculate_avg_sample_rate(file_path):
         print(f"Error: {e}")
         return None
 
+def analyze_dataset_directory(base_dir="DataSet"):
+    """
+    Analyze all CSV files in the dataset directory structure:
+    DataSet > range bin > FilteredCSV > *.csv
+    Returns a dictionary of sample rates by range bin.
+    """
+    # Get the full path to the base directory
+    base_path = os.path.join(os.getcwd(), base_dir)
+    if not os.path.exists(base_path):
+        print(f"Error: Directory '{base_path}' not found.")
+        return None, None
+    
+    # Dictionary to store rates by range bin
+    rates_by_bin = defaultdict(list)
+    all_rates = []
+    
+    # Process each range bin directory
+    for range_bin in os.listdir(base_path):
+        range_bin_path = os.path.join(base_path, range_bin)
+        
+        # Skip if not a directory
+        if not os.path.isdir(range_bin_path):
+            continue
+            
+        # Check for FilteredCSV directory
+        filtered_csv_path = os.path.join(range_bin_path, "FilteredCSV")
+        if not os.path.exists(filtered_csv_path):
+            print(f"Warning: No FilteredCSV directory found in {range_bin_path}")
+            continue
+            
+        # Process each CSV file in the FilteredCSV directory
+        csv_files = [f for f in os.listdir(filtered_csv_path) if f.endswith('.csv')]
+        
+        for csv_file in csv_files:
+            file_path = os.path.join(filtered_csv_path, csv_file)
+            rate = calculate_avg_sample_rate(file_path)
+            
+            if rate is not None:
+                rates_by_bin[range_bin].append(rate)
+                all_rates.append(rate)
+                print(f"Processed: {file_path} - Sample rate: {rate:.2f} Hz")
+    
+    return rates_by_bin, all_rates
+
 def main():
-    # Set up argument parser
-    parser = argparse.ArgumentParser(description='Calculate the average sample rate from a CSV file.')
-    parser.add_argument('file', nargs='?', help='Path to the CSV file')
+    parser = argparse.ArgumentParser(description='Calculate sample rates from CSV files in DataSet directory.')
+    parser.add_argument('--dir', default='DataSet', help='Base directory to scan (default: DataSet)')
+    parser.add_argument('file', nargs='?', help='Single CSV file to analyze (optional)')
+    
     args = parser.parse_args()
     
-    file_path = args.file
-    
-    # If no file path was provided as an argument, prompt the user
-    if file_path is None:
-        file_path = input("Enter the path to the CSV file: ")
-    
-    # Calculate and print the average sample rate
-    avg_rate = calculate_avg_sample_rate(file_path)
-    
-    if avg_rate is not None:
-        print(f"Average sample rate: {avg_rate:.2f} Hz")
+    if args.file:
+        # Analyze single file
+        file_path = args.file
+        avg_rate = calculate_avg_sample_rate(file_path)
+        
+        if avg_rate is not None:
+            print(f"Average sample rate for {file_path}: {avg_rate:.2f} Hz")
+        else:
+            print(f"Failed to calculate average sample rate for {file_path}.")
     else:
-        print("Failed to calculate average sample rate.")
+        # Analyze entire dataset
+        rates_by_bin, all_rates = analyze_dataset_directory(args.dir)
+        
+        if rates_by_bin and all_rates:
+            print("\n===== Sample Rates by Range Bin =====")
+            for bin_name, rates in sorted(rates_by_bin.items()):
+                avg_bin_rate = np.mean(rates)
+                print(f"Range bin {bin_name}: {avg_bin_rate:.2f} Hz (from {len(rates)} files)")
+            
+            overall_avg = np.mean(all_rates)
+            print(f"\nOverall average sample rate: {overall_avg:.2f} Hz")
+            print(f"Total files processed: {len(all_rates)}")
+        else:
+            print("No valid data found or error in processing.")
 
 if __name__ == "__main__":
     main()
