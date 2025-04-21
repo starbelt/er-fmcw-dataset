@@ -180,7 +180,7 @@ def create_distribution_charts(results, output_dir="accuracy_plots"):
 
     # Set font to Calibri and increase font size to 30
     plt.rcParams['font.family'] = 'Calibri'
-    plt.rcParams['font.size'] = 25
+    plt.rcParams['font.size'] = 38
 
     # Plot CNN Accuracy bars shifted to the left
     plt.bar(x_indices + bar_width / 2, ML_accuracies, bar_width, label='CNN Accuracy', color='#E5751F')
@@ -189,15 +189,15 @@ def create_distribution_charts(results, output_dir="accuracy_plots"):
     plt.bar(x_indices - bar_width / 2, accuracies, bar_width, label='Signal Processing Accuracy', color='#861F41')
 
     # Adjust x-ticks to align with the center of the grouped bars
-    bin_names_formatted = [bin_name.replace("-", " - ").replace("_", " ") for bin_name in bin_names]
+    bin_names_formatted = [bin_name.replace("_", " ") for bin_name in bin_names]
     plt.xticks(x_indices, bin_names_formatted)
     # plt.title('Accuracy by Distance Bin')
     plt.xlabel('Distance Bin (m)')
     plt.ylabel('Accuracy (%)')
     plt.ylim(0, 100)
     plt.grid(True, alpha=0.3)
-    plt.xticks(rotation=0, ha='center', fontsize=20)
-    plt.legend(loc='lower left', fontsize=20)
+    plt.xticks(rotation=0, ha='center', fontsize=24)
+    plt.legend(loc='lower left', fontsize=29, bbox_to_anchor=(0., 1.02, 1., .102), ncol=2, mode="expand", borderaxespad=0.)
     
     # Save the summary plot
     summary_path = os.path.join(output_dir, "accuracy_summary.png")
