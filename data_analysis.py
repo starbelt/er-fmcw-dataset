@@ -2,8 +2,13 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as font_manager
 import re
 from collections import defaultdict
+
+plt.rcParams['font.family']='serif'
+# cmfont = font_manager.FontProperties(fname='cmunrm.ttf')
+# plt.rcParams['font.serif']=cmfont.get_name()
 
 def parse_bin_range(bin_name):
     """Extract the min and max values from a bin range string and adjust by 0.01m"""
@@ -16,7 +21,7 @@ def parse_bin_range(bin_name):
     return None, None
 
 def analyze_dataset(base_dir="DataSet"):
-    """Analyze all bins in the dataset for accuracy, including the no_object dataset"""
+    """Analyze all bins in the dataset for accuracy."""
     results = []
     
     # Check if base directory exists
@@ -35,46 +40,7 @@ def analyze_dataset(base_dir="DataSet"):
             print(f"Warning: No FilteredCSV directory found in {bin_path}")
             continue
         
-        # Handle the no_object dataset separately
-        if bin_dir == "no_object":
-            print(f"Processing bin: {bin_dir}")
-            all_distances = []
-            
-            # Process each CSV file
-            csv_files = [f for f in os.listdir(filtered_csv_path) if f.endswith('.csv')]
-            
-            for csv_file in csv_files:
-                file_path = os.path.join(filtered_csv_path, csv_file)
-                try:
-                    # Read the CSV file
-                    df = pd.read_csv(file_path)
-                    
-                    # Extract calculated distances (Range column)
-                    if "Range (m)" in df.columns:
-                        distances = df["Range (m)"].dropna().tolist()
-                        all_distances.extend(distances)
-                        
-                except Exception as e:
-                    print(f"Error processing {file_path}: {e}")
-            
-            if not all_distances:
-                print(f"No distance data found for bin {bin_dir}")
-                continue
-            
-            # For no_object, accuracy is always 0 since no distances should be in range
-            bin_result = {
-                "bin_name": bin_dir,
-                "bin_range": (None, None),  # No range for no_object
-                "all_distances": all_distances,
-                "in_range_count": len(all_distances),
-                "total_count": len(all_distances),
-                "accuracy": len(all_distances) / len(all_distances) if all_distances else 0
-            }
-            
-            results.append(bin_result)
-            continue
-        
-        # Parse the bin range for other bins
+        # Parse the bin range for bins
         bin_low, bin_high = parse_bin_range(bin_dir)
         if bin_low is None:
             print(f"Warning: Could not parse bin range from '{bin_dir}', skipping")
@@ -170,39 +136,42 @@ def create_distribution_charts(results, output_dir="accuracy_plots"):
         print(f"Created charts for bin {bin_name}")
     
     # Create summary accuracy bar chart
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 6.5))
     bin_names = [data["bin_name"] for data in sorted(results, key=lambda x: x["bin_name"])]
     accuracies = [data["accuracy"] * 100 for data in sorted(results, key=lambda x: x["bin_name"])]
     ML_accuracies = [hardcoded_ML_accuracy[i] * 100 for i in range(len(accuracies))]
     
-    bar_width = 0.4  # Width of each bar
+    bar_width = 0.45  # Width of each bar
     x_indices = np.arange(len(bin_names))  # X positions for the bars
 
     # Set font to Calibri and increase font size to 30
-    plt.rcParams['font.family'] = 'Calibri'
-    plt.rcParams['font.size'] = 38
+    # plt.rcParams['font.family'] = 'cmunrm'
+    plt.rcParams['font.size'] = 30
 
     # Plot CNN Accuracy bars shifted to the left
-    plt.bar(x_indices + bar_width / 2, ML_accuracies, bar_width, label='CNN Accuracy', color='#E5751F')
+    plt.bar(x_indices + bar_width / 2, ML_accuracies, bar_width, label='CNN', color='#E5751F')
 
     # Plot RADAR Signal Processing Accuracy bars shifted to the right
-    plt.bar(x_indices - bar_width / 2, accuracies, bar_width, label='Signal Processing Accuracy', color='#861F41')
+    plt.bar(x_indices - bar_width / 2, accuracies, bar_width, label='Peak Detection', color='#861F41')
 
     # Adjust x-ticks to align with the center of the grouped bars
     bin_names_formatted = [bin_name.replace("_", " ") for bin_name in bin_names]
-    plt.xticks(x_indices, bin_names_formatted)
+    plt.xticks(x_indices, bin_names_formatted, fontsize=20)
     # plt.title('Accuracy by Distance Bin')
-    plt.xlabel('Distance Bin (m)')
-    plt.ylabel('Accuracy (%)')
+    plt.xlabel('Distance Bin (m)', fontsize=30)
+    plt.ylabel('Accuracy (%)', fontsize=30)
     plt.ylim(0, 100)
-    plt.grid(True, alpha=0.3)
-    plt.xticks(rotation=0, ha='center', fontsize=24)
-    plt.legend(loc='lower left', fontsize=29, bbox_to_anchor=(0., 1.02, 1., .102), ncol=2, mode="expand", borderaxespad=0.)
+    plt.yticks([0, 50, 100])
+    plt.grid(True, alpha=0.5)
+    # Format x-tick labels to enter a new line after 5 characters
+    bin_names_formatted = ['\n'.join([bin_name[i:i+5] for i in range(0, len(bin_name), 5)]) for bin_name in bin_names_formatted]
+    plt.xticks(x_indices, bin_names_formatted, rotation=0, ha='center', fontsize=30)
+    plt.legend(loc='lower left', fontsize=34, bbox_to_anchor=(0., 1.02, 1., .102), ncol=2, mode="expand", borderaxespad=0.)
     
-    # Save the summary plot
+    # Save the summary plot with a transparent background
     summary_path = os.path.join(output_dir, "accuracy_summary.png")
     plt.tight_layout()
-    plt.savefig(summary_path)
+    plt.savefig(summary_path, transparent=True)
     plt.close()
     
     print(f"Created summary accuracy chart: {summary_path}")
